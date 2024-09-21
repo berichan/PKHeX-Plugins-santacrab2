@@ -390,6 +390,8 @@ namespace PKHeX.Core.AutoMod
             {
                 size.WeightScalar = (byte)wc9.WeightValue;
                 size.HeightScalar = (byte)wc9.HeightValue;
+                if (pk is IScaledSize3 sz3_c)
+                    sz3_c.Scale = (byte)wc9.Scale;
                 return;
             }
 
@@ -428,7 +430,12 @@ namespace PKHeX.Core.AutoMod
             size.HeightScalar = (byte)height;
             size.WeightScalar = (byte)weight;
             if (pk is IScaledSize3 sz3 && enc is not EncounterFixed9 && sz3.Scale != 128)
+            {
+                if (pk is IHomeTrack { HasTracker: false }) //MiscVerifier.IsHeightScaleMatchRequired
                     sz3.Scale = (byte)scale;
+                else
+                    sz3.Scale = size.HeightScalar;
+            }
         }
 
         public static void ClearHyperTraining(this PKM pk)
