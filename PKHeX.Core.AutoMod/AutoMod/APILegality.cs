@@ -33,6 +33,7 @@ namespace PKHeX.Core.AutoMod
         public static bool AllowHOMETransferGeneration { get; set; } = true;
         public static MoveType[] RandTypes { get; set; } = [];
         public static int Timeout { get; set; } = 15;
+        public static int WhileLoopTimeoutMilliseconds { get; set; } = 500;
 
         /// <summary>
         /// Main function that auto legalizes based on the legality
@@ -1038,8 +1039,12 @@ namespace PKHeX.Core.AutoMod
             uint count = 0;
             uint finalseed = 0;
             ulong seed = Util.Rand.Rand64();
+            var timer = Stopwatch.StartNew();
             do
             {
+                if (timer.ElapsedMilliseconds > WhileLoopTimeoutMilliseconds)
+                    break;
+
                 var pi = PersonalTable.SV.GetFormEntry(enc.Species, enc.Form);
                 var rand = new Xoroshiro128Plus(seed);
                 seed = rand.NextInt(uint.MaxValue);
@@ -1052,10 +1057,15 @@ namespace PKHeX.Core.AutoMod
                 if (((IEncounterable)enc).Shiny == Shiny.Random) // let's decide if it's shiny or not!
                 {
                     int i = 1;
-                    bool isShiny;
-                    uint xor;
+                    bool isShiny = false;
+                    uint xor = 0;
+                    var timerInner = Stopwatch.StartNew();
+
                     while (true)
                 {
+                        if (timerInner.ElapsedMilliseconds > WhileLoopTimeoutMilliseconds)
+                            break;
+
                         xor = ShinyUtil.GetShinyXor(pid, fakeTID);
                         isShiny = xor < 16;
                         if (isShiny)
@@ -1182,8 +1192,12 @@ namespace PKHeX.Core.AutoMod
             }
             else
             {
+                var timer = Stopwatch.StartNew();
                 while (true)
                 {
+                    if (timer.ElapsedMilliseconds > WhileLoopTimeoutMilliseconds)
+                        break;
+
                     seed = Util.Rand32();
                     rng = new Xoroshiro128Plus(seed);
 
@@ -1257,9 +1271,13 @@ namespace PKHeX.Core.AutoMod
             var required_ivs = new[] { IVs[0], IVs[1], IVs[2], IVs[4], IVs[5], IVs[3] };
             var pi = PersonalTable.BDSP.GetFormEntry(pk.Species, pk.Form);
             var ratio = pi.Gender;
+            var timer = Stopwatch.StartNew();
 
             while (true)
             {
+                if (timer.ElapsedMilliseconds > WhileLoopTimeoutMilliseconds)
+                    break;
+
                 var seed = Util.Rand32();
                 var rng = new Xoroshiro128Plus8b(seed);
 
