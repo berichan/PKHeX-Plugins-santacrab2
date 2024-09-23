@@ -448,6 +448,8 @@ namespace PKHeX.Core.AutoMod
                         return false;
                 }
             }
+            if (enc.Generation > 2 && set.EVs.Sum() > 510)
+                return false;
 
             return destVer.ExistsInGame(set.Species, set.Form);
         }
